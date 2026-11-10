@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { normalizar } from '../lib/format'
-import { BUCKET_NOTAS, DEMO, TAMANHO_MAX_ARQUIVO, banco } from '../lib/supabase'
-import { NOME_TABELA, type Chave, type Dados, type Nota, type Tabelas } from '../lib/types'
+import { BUCKET_NOTAS, BUCKET_PEDIDOS, DEMO, TAMANHO_MAX_ARQUIVO, banco } from '../lib/supabase'
+import { NOME_TABELA, type Chave, type Dados, type Nota, type Pedido, type Tabelas } from '../lib/types'
 import { useAuth } from './AuthContext'
 import { dadosDemo } from './demo'
 
@@ -18,9 +18,12 @@ interface DataCtx extends Dados {
   anexarPdf: (nota: Nota, arquivo: File) => Promise<void>
   /** Link assinado de 1 hora, sempre forçando download. */
   linkPdf: (nota: Nota) => Promise<string | null>
+  /** Arquiva o pedido assinado pelo cliente (PDF) no orçamento. */
+  anexarPedido: (orcamentoId: string, arquivo: File) => Promise<void>
+  linkPedido: (pedido: Pedido) => Promise<string | null>
 }
 
-const VAZIO: Dados = { perfis: [], formas: [], orcamentos: [], parcelas: [], notas: [] }
+const VAZIO: Dados = { perfis: [], formas: [], orcamentos: [], parcelas: [], notas: [], pedidos: [] }
 const Ctx = createContext<DataCtx | null>(null)
 
 const PADRAO: { [K in Chave]: Novo<K> } = {
@@ -29,6 +32,7 @@ const PADRAO: { [K in Chave]: Novo<K> } = {
   orcamentos: { itens: [], origem: 'manual', cliente_doc: null, obra: null, cidade: null, uf: null, observacao: null },
   parcelas: { pago_em: null, descricao: null, observacao: null },
   notas: { arquivo_path: null, arquivo_nome: null },
+  pedidos: {},
 }
 
 function ordenar(d: Dados): Dados {
@@ -40,6 +44,7 @@ function ordenar(d: Dados): Dados {
     ),
     parcelas: [...d.parcelas].sort((a, b) => a.vencimento.localeCompare(b.vencimento)),
     notas: [...d.notas].sort((a, b) => a.data_emissao.localeCompare(b.data_emissao)),
+    pedidos: [...d.pedidos].sort((a, b) => a.criado_em.localeCompare(b.criado_em)),
   }
 }
 
@@ -114,10 +119,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [perfilId])
 
   const apagar = useCallback(async (k: Chave, id: string) => {
+    const pedido = k === 'pedidos' ? atuais.current.pedidos.find((x) => x.id === id) : undefined
     if (!DEMO) {
       const { data, error } = await banco().from(NOME_TABELA[k]).delete().eq('id', id).select('id')
       if (error) throw error
       if (!data?.length) throw { code: '42501' }
+      // o registro saiu; tira também o arquivo (se falhar, o arquivo só fica sem uso)
+      if (pedido) await banco().storage.from(BUCKET_PEDIDOS).remove([pedido.arquivo_path])
     }
     setDados((d) => {
       const novo = { ...d, [k]: (d[k] as { id: string }[]).filter((x) => x.id !== id) } as Dados
@@ -125,6 +133,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         // no banco, parcelas e notas do orçamento são apagadas junto
         novo.parcelas = novo.parcelas.filter((p) => p.orcamento_id !== id)
         novo.notas = novo.notas.filter((n) => n.orcamento_id !== id)
+        novo.pedidos = novo.pedidos.filter((n) => n.orcamento_id !== id)
       }
       return novo
     })
@@ -153,6 +162,28 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return data.signedUrl
   }, [])
 
+  const anexarPedido = useCallback(
+    async (orcamentoId: string, arquivo: File) => {
+      if (arquivo.type !== 'application/pdf') throw new Error('Só é aceito arquivo PDF.')
+      if (arquivo.size > TAMANHO_MAX_ARQUIVO) throw new Error('Arquivo grande demais (máximo 25 MB).')
+      const caminho = `${orcamentoId}/${crypto.randomUUID()}.pdf`
+      if (!DEMO) {
+        const { error } = await banco().storage.from(BUCKET_PEDIDOS).upload(caminho, arquivo, { contentType: 'application/pdf' })
+        if (error) throw error
+      }
+      await gravar('pedidos', { orcamento_id: orcamentoId, arquivo_path: caminho, arquivo_nome: arquivo.name.slice(0, 120) })
+    },
+    [gravar],
+  )
+
+  const linkPedido = useCallback(async (pedido: Pedido) => {
+    if (DEMO) return null
+    const nome = pedido.arquivo_nome.replace(/[^\w.-]+/g, '_')
+    const { data, error } = await banco().storage.from(BUCKET_PEDIDOS).createSignedUrl(pedido.arquivo_path, 3600, { download: nome })
+    if (error) throw error
+    return data.signedUrl
+  }, [])
+
   // No modo demonstração não há banco para filtrar: imitamos aqui a regra do vendedor (só vê os dele).
   const visiveis = useMemo<Dados>(() => {
     if (!DEMO || !perfil || perfil.papel !== 'Vendedor') return dados
@@ -163,11 +194,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       orcamentos: dados.orcamentos.filter((o) => meus.has(o.id)),
       parcelas: dados.parcelas.filter((p) => meus.has(p.orcamento_id)),
       notas: dados.notas.filter((n) => meus.has(n.orcamento_id)),
+      pedidos: dados.pedidos.filter((n) => meus.has(n.orcamento_id)),
     }
   }, [dados, perfil])
 
   return (
-    <Ctx.Provider value={{ ...visiveis, carregando, erro, recarregar, gravar, apagar, anexarPdf, linkPdf }}>
+    <Ctx.Provider value={{ ...visiveis, carregando, erro, recarregar, gravar, apagar, anexarPdf, linkPdf, anexarPedido, linkPedido }}>
       {children}
     </Ctx.Provider>
   )

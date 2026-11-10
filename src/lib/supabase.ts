@@ -25,6 +25,7 @@ export function banco(): SupabaseClient {
 }
 
 export const BUCKET_NOTAS = 'notas'
+export const BUCKET_PEDIDOS = 'pedidos'
 export const TAMANHO_MAX_ARQUIVO = 25 * 1024 * 1024
 
 /** Traduz os erros do Supabase para português simples. */

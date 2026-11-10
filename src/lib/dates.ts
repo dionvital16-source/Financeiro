@@ -10,6 +10,11 @@ export function hojeISO(): string {
 /** AAAA-MM-DD -> DD/MM/AAAA */
 export function fmtData(v: string | null | undefined): string {
   if (!v) return '—'
+  // data com hora (ex.: quando foi criado): mostra o dia no fuso do computador
+  if (v.length > 10) {
+    const dt = new Date(v)
+    if (!Number.isNaN(dt.getTime())) v = iso(dt.getFullYear(), dt.getMonth() + 1, dt.getDate())
+  }
   const [y, m, d] = v.slice(0, 10).split('-')
   return `${d}/${m}/${y}`
 }

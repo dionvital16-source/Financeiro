@@ -245,3 +245,6 @@ select.input { appearance: auto; }
   .sidebar-foot { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
   .toast { left: 16px; right: 16px; bottom: 16px; }
 }
+
+.btn.ocupado { opacity: 0.45; cursor: not-allowed; }
+label.btn { cursor: pointer; }

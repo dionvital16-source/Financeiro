@@ -1,13 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Check, Download, Paperclip, Pencil, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Check, Download, FileText, Paperclip, Pencil, Plus, Trash2 } from 'lucide-react'
 import { OrcamentoForm } from '../components/OrcamentoForm'
 import { SeloNota, SeloOrcamento, SeloParcela, useResumos } from '../components/Selos'
 import { Blueprint, Cabecalho, Campo, Confirmar, Modal, Stat, Vazio } from '../components/ui'
 import { addMeses, fmtData, hojeISO } from '../lib/dates'
 import { arred, moeda, parseValor, valorCampo } from '../lib/format'
 import { pode, situacaoParcela } from '../lib/regras'
-import type { Nota, Orcamento, Parcela } from '../lib/types'
+import type { Nota, Orcamento, Parcela, Pedido } from '../lib/types'
 import { useAuth } from '../state/AuthContext'
 import { useDados } from '../state/DataContext'
 import { useToast } from '../state/ToastContext'
@@ -214,14 +214,14 @@ type Aberto =
   | { tipo: 'orcamento' }
   | { tipo: 'parcela'; atual?: Parcela }
   | { tipo: 'nota'; atual?: Nota }
-  | { tipo: 'apagar'; alvo: 'orcamentos' | 'parcelas' | 'notas'; id: string; texto: string }
+  | { tipo: 'apagar'; alvo: 'orcamentos' | 'parcelas' | 'notas' | 'pedidos'; id: string; texto: string }
   | null
 
 export function OrcamentoDetalhe() {
   const { id } = useParams()
   const nav = useNavigate()
   const { perfil, demo } = useAuth()
-  const { orcamentos, parcelas, notas, formas, gravar, apagar, linkPdf } = useDados()
+  const { orcamentos, parcelas, notas, pedidos, formas, gravar, apagar, linkPdf, anexarPedido, linkPedido } = useDados()
   const { avisar, avisarErro } = useToast()
   const resumos = useResumos()
   const [aberto, setAberto] = useState<Aberto>(null)
@@ -244,6 +244,7 @@ export function OrcamentoDetalhe() {
   const podeApagar = pode.apagar(perfil.papel)
   const minhas = parcelas.filter((p) => p.orcamento_id === o.id)
   const minhasNotas = notas.filter((n) => n.orcamento_id === o.id)
+  const meusPedidos = pedidos.filter((n) => n.orcamento_id === o.id)
   const nomeForma = (fid: string) => formas.find((x) => x.id === fid)?.nome ?? '—'
   const hoje = hojeISO()
 
@@ -256,10 +257,23 @@ export function OrcamentoDetalhe() {
     }
   }
 
-  async function baixar(n: Nota) {
+  async function enviarPedido(arquivo: File | undefined) {
+    if (!arquivo || !o) return
+    setOcupado(true)
+    try {
+      await anexarPedido(o.id, arquivo)
+      avisar('Pedido assinado arquivado.')
+    } catch (e) {
+      avisarErro(e)
+    } finally {
+      setOcupado(false)
+    }
+  }
+
+  async function baixar(n: Nota | Pedido) {
     if (demo) return avisar('No modo demonstração o PDF não é guardado.')
     try {
-      const url = await linkPdf(n)
+      const url = 'numero' in n ? await linkPdf(n) : await linkPedido(n)
       if (!url) return
       const a = document.createElement('a')
       a.href = url
@@ -490,6 +504,55 @@ export function OrcamentoDetalhe() {
               </p>
             )}
           </div>
+        )}
+      </Blueprint>
+
+      <Blueprint className="card">
+        <div className="card-head">
+          <h3>Pedido assinado</h3>
+          <label className={`btn btn-primary ${ocupado ? 'ocupado' : ''}`} aria-disabled={ocupado}>
+            <Paperclip size={17} strokeWidth={1.5} />
+            {ocupado ? 'Enviando…' : 'Anexar PDF'}
+            <input
+              type="file"
+              accept="application/pdf,.pdf"
+              hidden
+              disabled={ocupado}
+              onChange={(e) => {
+                void enviarPedido(e.target.files?.[0])
+                e.target.value = ''
+              }}
+            />
+          </label>
+        </div>
+        {meusPedidos.length === 0 ? (
+          <Vazio>Nenhum pedido arquivado. Clique em "Anexar PDF" para guardar o pedido assinado pelo cliente (até 25 MB).</Vazio>
+        ) : (
+          meusPedidos.map((d) => (
+            <div key={d.id} className="lista-row">
+              <FileText size={18} strokeWidth={1.5} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="ellipsis" style={{ fontWeight: 500 }}>
+                  {d.arquivo_nome}
+                </div>
+                <div className="label-up">Arquivado em {fmtData(d.criado_em)}</div>
+              </div>
+              <button type="button" className="btn-link" onClick={() => void baixar(d)}>
+                <Download size={14} strokeWidth={1.5} />
+                Baixar
+              </button>
+              {podeApagar && (
+                <button
+                  type="button"
+                  className="btn btn-icon"
+                  aria-label="Apagar pedido"
+                  onClick={() => setAberto({ tipo: 'apagar', alvo: 'pedidos', id: d.id, texto: `Apagar o arquivo "${d.arquivo_nome}"? Não dá para desfazer.` })}
+                >
+                  <Trash2 size={15} strokeWidth={1.5} />
+                </button>
+              )}
+            </div>
+          ))
         )}
       </Blueprint>
 

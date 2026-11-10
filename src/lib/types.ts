@@ -72,12 +72,22 @@ export interface Nota {
   criado_em: string
 }
 
+export interface Pedido {
+  id: string
+  orcamento_id: string
+  arquivo_path: string
+  arquivo_nome: string
+  criado_por: string | null
+  criado_em: string
+}
+
 export interface Tabelas {
   perfis: Perfil
   formas: Forma
   orcamentos: Orcamento
   parcelas: Parcela
   notas: Nota
+  pedidos: Pedido
 }
 export type Chave = keyof Tabelas
 export type Dados = { [K in Chave]: Tabelas[K][] }
@@ -88,4 +98,5 @@ export const NOME_TABELA: Record<Chave, string> = {
   orcamentos: 'orcamentos',
   parcelas: 'parcelas',
   notas: 'notas_fiscais',
+  pedidos: 'pedidos_assinados',
 }

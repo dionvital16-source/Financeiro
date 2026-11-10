@@ -106,5 +106,5 @@ const nota = (id: string, o: string, numero: string, valor: number, dias: number
 const notas: Nota[] = [nota('n-1', 'o-3', '000451', 9800, 19), nota('n-2', 'o-2', '000460', 21400, 11)]
 
 export function dadosDemo(): Dados {
-  return { perfis: [...PERFIS_DEMO], formas, orcamentos, parcelas, notas }
+  return { perfis: [...PERFIS_DEMO], formas, orcamentos, parcelas, notas, pedidos: [] }
 }
