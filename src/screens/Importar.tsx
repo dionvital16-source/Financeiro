@@ -83,7 +83,7 @@ export function Importar() {
       <Cabecalho kicker="Sistema CEM" titulo="Importar XML de vendas" />
       <Blueprint className="card col">
         <p>
-          Escolha um ou mais arquivos XML de venda exportados do CEM. O site lê o código da obra, o cliente, o vendedor e soma o valor dos itens. Nada é
+          Escolha um ou mais arquivos XML de venda exportados do CEM. O site lê só o código da obra, os dados do cliente, o vendedor e o valor final do orçamento; os itens não são guardados. Nada é
           gravado antes de você conferir e clicar em importar.
         </p>
         <label className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
@@ -125,7 +125,6 @@ export function Importar() {
                   <th>Cliente</th>
                   <th>Vendedor</th>
                   <th>Fechado em</th>
-                  <th className="num">Itens</th>
                   <th className="num">Valor</th>
                   <th>Situação</th>
                 </tr>
@@ -152,13 +151,12 @@ export function Importar() {
                       <td>
                         <input className="input" style={{ minHeight: 36 }} type="date" required disabled={l.existe} value={l.data} onChange={(e) => mudar(i, { data: e.target.value || hojeISO() })} />
                       </td>
-                      <td className="num">{l.dados.itens.length}</td>
                       <td className="num">{moeda(l.dados.valor)}</td>
                       <td>{l.existe ? <Selo tom="ink">Já existe</Selo> : <Selo tom="verde">Novo</Selo>}</td>
                     </tr>
                   ) : (
                     <tr key={i}>
-                      <td colSpan={6}>
+                      <td colSpan={5}>
                         <div style={{ fontWeight: 500 }}>{l.arquivo}</div>
                         <div className="erro-txt">{l.erro}</div>
                       </td>

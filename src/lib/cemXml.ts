@@ -1,5 +1,4 @@
 import { arred } from './format'
-import type { ItemOrcamento } from './types'
 
 /** Orçamento lido de um XML de vendas do CEM. */
 export interface OrcamentoCem {
@@ -10,8 +9,8 @@ export interface OrcamentoCem {
   cidade: string | null
   uf: string | null
   vendedor_nome: string | null
+  /** soma de quantidade x preço dos itens; os itens em si não são guardados */
   valor: number
-  itens: ItemOrcamento[]
 }
 
 const TAMANHO_MAX = 5 * 1024 * 1024
@@ -54,21 +53,10 @@ export function lerXmlCem(xml: string): OrcamentoCem {
   const codigo = texto(obra, 'CODIGO')
   if (!codigo) throw new Error('O XML não tem o código da obra.')
 
-  const itens: ItemOrcamento[] = []
+  // O XML não traz o total: somamos quantidade x preço de cada item.
   let total = 0
   for (const t of Array.from(filho(raiz, 'TIPOLOGIAS')?.children ?? [])) {
-    if (t.tagName !== 'TIPOLOGIA') continue
-    const item: ItemOrcamento = {
-      tipo: texto(t, 'TIPO'),
-      descricao: texto(t, 'DESCR'),
-      vidro: texto(t, 'DESCR_VIDRO'),
-      qtde: numero(t, 'QTDE'),
-      largura: numero(t, 'LARGURA'),
-      altura: numero(t, 'ALTURA'),
-      preco_unit: numero(t, 'PRECO_UNIT'),
-    }
-    total += item.qtde * item.preco_unit
-    itens.push(item)
+    if (t.tagName === 'TIPOLOGIA') total += numero(t, 'QTDE') * numero(t, 'PRECO_UNIT')
   }
 
   return {
@@ -80,7 +68,6 @@ export function lerXmlCem(xml: string): OrcamentoCem {
     uf: texto(end, 'END_UF') || texto(cli, 'END_UF') || null,
     vendedor_nome: texto(obra, 'VENDEDOR') || null,
     valor: arred(total),
-    itens,
   }
 }
 

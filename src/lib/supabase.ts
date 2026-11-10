@@ -32,6 +32,8 @@ export function mensagemErro(e: unknown): string {
   const err = (e ?? {}) as { message?: string; code?: string; status?: number }
   const msg = err.message ?? ''
   const m = msg.toLowerCase()
+  if (m.includes('cadastro não autorizado'))
+    return 'Este e-mail não está liberado. Peça ao administrador para criar o seu acesso.'
   if (err.code === 'P0001' && msg) return msg
   if (m.includes('invalid login credentials')) return 'E-mail ou senha incorretos.'
   if (m.includes('email not confirmed')) return 'Confirme seu e-mail (veja a caixa de entrada) antes de entrar.'

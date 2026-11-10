@@ -493,46 +493,6 @@ export function OrcamentoDetalhe() {
         )}
       </Blueprint>
 
-      {o.itens.length > 0 && (
-        <Blueprint className="card">
-          <div className="card-head">
-            <h3>Itens do orçamento</h3>
-            <span className="label-up">Importado do CEM</span>
-          </div>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Tipo</th>
-                  <th>Descrição</th>
-                  <th>Medida (mm)</th>
-                  <th className="num">Qtde</th>
-                  <th className="num">Unitário</th>
-                  <th className="num">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {o.itens.map((i, n) => (
-                  <tr key={n}>
-                    <td>{i.tipo}</td>
-                    <td>
-                      {i.descricao}
-                      {i.vidro && <div className="label-up">{i.vidro}</div>}
-                    </td>
-                    <td className="nowrap">
-                      {i.largura} × {i.altura}
-                    </td>
-                    <td className="num">{i.qtde}</td>
-                    <td className="num">{moeda(i.preco_unit)}</td>
-                    <td className="num">{moeda(arred(i.qtde * i.preco_unit))}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Blueprint>
-      )}
-
       {aberto?.tipo === 'orcamento' && <OrcamentoForm atual={o} onFechar={() => setAberto(null)} />}
       {aberto?.tipo === 'parcela' && <ParcelaForm orcamento={o} atual={aberto.atual} sugestao={r.semLancar} onFechar={() => setAberto(null)} />}
       {aberto?.tipo === 'nota' && (
