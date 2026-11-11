@@ -13,7 +13,8 @@ function detectarDemo(): boolean {
   }
 }
 
-export const DEMO = detectarDemo()
+// VITE_DEMO=1 liga a demonstração direto na construção: usado só em prévias, nunca no site publicado.
+export const DEMO = import.meta.env.VITE_DEMO === '1' || detectarDemo()
 export const CONFIGURADO = Boolean(url && chave)
 
 /** Só a chave pública entra aqui. No modo demonstração o banco nem é criado. */

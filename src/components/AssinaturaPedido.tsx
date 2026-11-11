@@ -11,7 +11,7 @@ import { Confirmar, Selo } from './ui'
 /** Envio do pedido para o cliente assinar pelo link (fica dentro do quadro "Pedido assinado"). */
 export function AssinaturaPedido({ orcamento }: { orcamento: Orcamento }) {
   const { assinaturas, enviarParaAssinatura, novoLinkAssinatura, gravar, recarregar } = useDados()
-  const { perfil } = useAuth()
+  const { perfil, demo } = useAuth()
   const { avisar, avisarErro } = useToast()
   // O código do link só existe na hora em que é criado; depois o banco guarda apenas o hash dele.
   const [links, setLinks] = useState<Record<string, string>>({})
@@ -122,6 +122,11 @@ export function AssinaturaPedido({ orcamento }: { orcamento: Orcamento }) {
                     Cancelar envio
                   </button>
                 </div>
+                {demo && (
+                  <a className="btn-link" href={`/assinar/${token}`} target="_blank" rel="noreferrer">
+                    Demonstração: abrir a página que o cliente vê
+                  </a>
+                )}
                 {!orcamento.cliente_fone && (
                   <span className="muted" style={{ fontSize: 12.5 }}>
                     Este cliente está sem telefone no cadastro: o WhatsApp vai pedir para você escolher o contato.
