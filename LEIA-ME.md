@@ -16,6 +16,12 @@ Controle de orçamentos fechados, pagamentos, notas fiscais e pedidos assinados 
 | Apagar | Sim | Não | Não |
 | Formas de pagamento e usuários | Sim | Não | Não |
 
+## Visual
+
+Segue a identidade da Vital Esquadrias e Vidros: verdes da marca, logotipo em `public/`, títulos em Plus Jakarta Sans e faixas diagonais (17°). Cantos sempre retos; preto para alerta e atraso.
+
+No menu, a tela das vendas fechadas se chama "Clientes" (no código e no banco continua `orcamentos`).
+
 ## Como testar sem mexer no banco
 
 Abrir o site com `?demo` no final do endereço. Os dados são de exemplo e ficam só na memória do navegador.
