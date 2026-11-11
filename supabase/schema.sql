@@ -434,6 +434,11 @@ drop policy if exists pedidos_arquivo_apagar on storage.objects;
 create policy pedidos_arquivo_apagar on storage.objects for delete to authenticated
   using (bucket_id = 'pedidos' and public.meu_papel() = 'Admin');
 
+-- ---------- contato do cliente no orçamento ----------
+alter table public.orcamentos add column if not exists cliente_endereco text check (length(cliente_endereco) <= 300);
+alter table public.orcamentos add column if not exists cliente_fone     text check (length(cliente_fone) <= 60);
+alter table public.orcamentos add column if not exists cliente_email    text check (length(cliente_email) <= 160);
+
 -- ---------- primeiro administrador ----------
 -- Rodar UMA vez, à mão, no painel do Supabase (SQL Editor), trocando o e-mail e o nome:
 --   insert into public.profiles (email, nome, papel) values ('seu@email.com', 'Seu Nome', 'Admin');

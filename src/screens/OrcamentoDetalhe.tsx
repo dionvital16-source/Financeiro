@@ -357,6 +357,24 @@ export function OrcamentoDetalhe() {
             {o.cliente_doc}
           </span>
         )}
+        {o.cliente_fone && (
+          <span>
+            <span className="label-up">Telefone </span>
+            {o.cliente_fone}
+          </span>
+        )}
+        {o.cliente_email && (
+          <span>
+            <span className="label-up">E-mail </span>
+            {o.cliente_email}
+          </span>
+        )}
+        {o.cliente_endereco && (
+          <span>
+            <span className="label-up">Endereço </span>
+            {o.cliente_endereco}
+          </span>
+        )}
       </div>
       {o.observacao && <p className="muted">{o.observacao}</p>}
 

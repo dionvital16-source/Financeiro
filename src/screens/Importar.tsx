@@ -83,7 +83,7 @@ export function Importar() {
       <Cabecalho kicker="Sistema CEM" titulo="Importar XML de vendas" />
       <Blueprint className="card col">
         <p>
-          Escolha um ou mais arquivos XML de venda exportados do CEM. O site lê só o código da obra, os dados do cliente, o vendedor e o valor final do orçamento; os itens não são guardados. Nada é
+          Escolha um ou mais arquivos XML de venda exportados do CEM. O site lê só o código da obra, os dados do cliente (nome, CPF/CNPJ, endereço, telefone e e-mail), o vendedor e o valor final do orçamento; os itens não são guardados. Nada é
           gravado antes de você conferir e clicar em importar.
         </p>
         <label className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
@@ -137,6 +137,9 @@ export function Importar() {
                       <td>
                         <div style={{ fontWeight: 500 }}>{l.dados.cliente}</div>
                         <div className="label-up">{[l.dados.obra, l.dados.cidade].filter(Boolean).join(' · ')}</div>
+                        <div className="muted" style={{ fontSize: 12.5 }}>
+                          {[l.dados.cliente_doc, l.dados.cliente_fone, l.dados.cliente_email, l.dados.cliente_endereco].filter(Boolean).join(' · ')}
+                        </div>
                       </td>
                       <td>
                         <select className="input" style={{ minHeight: 36, minWidth: 160 }} disabled={l.existe} value={l.vendedor_id} onChange={(e) => mudar(i, { vendedor_id: e.target.value })}>

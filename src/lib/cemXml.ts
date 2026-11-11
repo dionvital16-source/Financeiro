@@ -5,6 +5,9 @@ export interface OrcamentoCem {
   codigo: string
   cliente: string
   cliente_doc: string | null
+  cliente_endereco: string | null
+  cliente_fone: string | null
+  cliente_email: string | null
   obra: string | null
   cidade: string | null
   uf: string | null
@@ -53,6 +56,14 @@ export function lerXmlCem(xml: string): OrcamentoCem {
   const codigo = texto(obra, 'CODIGO')
   if (!codigo) throw new Error('O XML não tem o código da obra.')
 
+  // endereço do cliente em uma linha só: rua, número, complemento, bairro, CEP
+  const rua = [texto(cli, 'END_LOGR'), texto(cli, 'END_NUMERO')].filter(Boolean).join(', ')
+  const cep = texto(cli, 'END_CEP')
+  const endereco = [rua, texto(cli, 'END_COMPL'), texto(cli, 'END_BAIRRO'), cep ? `CEP ${cep}` : '']
+    .filter(Boolean)
+    .join(' - ')
+    .slice(0, 300)
+
   // O XML não traz o total: somamos quantidade x preço de cada item.
   let total = 0
   for (const t of Array.from(filho(raiz, 'TIPOLOGIAS')?.children ?? [])) {
@@ -62,10 +73,13 @@ export function lerXmlCem(xml: string): OrcamentoCem {
   return {
     codigo,
     cliente: texto(cli, 'NOME') || 'Cliente não informado',
-    cliente_doc: texto(cli, 'CNPJ_CPF') || null,
+    cliente_doc: texto(cli, 'CNPJ_CPF').slice(0, 20) || null,
+    cliente_endereco: endereco || null,
+    cliente_fone: texto(cli, 'END_FONE').slice(0, 60) || null,
+    cliente_email: texto(cli, 'EMAIL').slice(0, 160) || null,
     obra: texto(obra, 'NOME') || null,
-    cidade: texto(end, 'END_CIDADE') || texto(cli, 'END_CIDADE') || null,
-    uf: texto(end, 'END_UF') || texto(cli, 'END_UF') || null,
+    cidade: texto(cli, 'END_CIDADE') || texto(end, 'END_CIDADE') || null,
+    uf: (texto(cli, 'END_UF') || texto(end, 'END_UF')).slice(0, 2) || null,
     vendedor_nome: texto(obra, 'VENDEDOR') || null,
     valor: arred(total),
   }

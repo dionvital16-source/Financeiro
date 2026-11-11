@@ -14,6 +14,9 @@ export function OrcamentoForm({ atual, onFechar, onSalvo }: { atual?: Orcamento;
     codigo: atual?.codigo ?? '',
     cliente: atual?.cliente ?? '',
     cliente_doc: atual?.cliente_doc ?? '',
+    cliente_endereco: atual?.cliente_endereco ?? '',
+    cliente_fone: atual?.cliente_fone ?? '',
+    cliente_email: atual?.cliente_email ?? '',
     obra: atual?.obra ?? '',
     cidade: atual?.cidade ?? '',
     uf: atual?.uf ?? '',
@@ -43,6 +46,9 @@ export function OrcamentoForm({ atual, onFechar, onSalvo }: { atual?: Orcamento;
         codigo: f.codigo.trim(),
         cliente: f.cliente.trim(),
         cliente_doc: f.cliente_doc.trim() || null,
+        cliente_endereco: f.cliente_endereco.trim() || null,
+        cliente_fone: f.cliente_fone.trim() || null,
+        cliente_email: f.cliente_email.trim() || null,
         obra: f.obra.trim() || null,
         cidade: f.cidade.trim() || null,
         uf: f.uf.trim().toUpperCase() || null,
@@ -77,6 +83,15 @@ export function OrcamentoForm({ atual, onFechar, onSalvo }: { atual?: Orcamento;
           </Campo>
           <Campo rotulo="CPF / CNPJ (opcional)">
             <input className="input" maxLength={20} {...campo('cliente_doc')} />
+          </Campo>
+          <Campo rotulo="Telefone (opcional)">
+            <input className="input" maxLength={60} {...campo('cliente_fone')} />
+          </Campo>
+          <Campo rotulo="E-mail do cliente (opcional)">
+            <input className="input" type="email" maxLength={160} {...campo('cliente_email')} />
+          </Campo>
+          <Campo rotulo="Endereço do cliente (opcional)" className="span-2">
+            <input className="input" maxLength={300} {...campo('cliente_endereco')} />
           </Campo>
           <Campo rotulo="Obra (opcional)">
             <input className="input" maxLength={160} {...campo('obra')} />

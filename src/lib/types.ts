@@ -33,6 +33,9 @@ export interface Orcamento {
   codigo: string
   cliente: string
   cliente_doc: string | null
+  cliente_endereco: string | null
+  cliente_fone: string | null
+  cliente_email: string | null
   obra: string | null
   cidade: string | null
   uf: string | null

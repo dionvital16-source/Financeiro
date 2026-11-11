@@ -29,7 +29,7 @@ const Ctx = createContext<DataCtx | null>(null)
 const PADRAO: { [K in Chave]: Novo<K> } = {
   perfis: { user_id: null, ativo: true },
   formas: { ativo: true, ordem: 99 },
-  orcamentos: { itens: [], origem: 'manual', cliente_doc: null, obra: null, cidade: null, uf: null, observacao: null },
+  orcamentos: { itens: [], origem: 'manual', cliente_doc: null, cliente_endereco: null, cliente_fone: null, cliente_email: null, obra: null, cidade: null, uf: null, observacao: null },
   parcelas: { pago_em: null, descricao: null, observacao: null },
   notas: { arquivo_path: null, arquivo_nome: null },
   pedidos: {},
