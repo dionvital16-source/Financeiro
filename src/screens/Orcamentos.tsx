@@ -68,7 +68,7 @@ export function Orcamentos() {
 
   return (
     <div className="page">
-      <Cabecalho kicker="Vendas fechadas" titulo="Orçamentos">
+      <Cabecalho kicker="Vendas fechadas" titulo="Clientes">
         {gestor && (
           <>
             <Link to="/importar" className="btn btn-secondary">
@@ -175,7 +175,7 @@ export function Orcamentos() {
           </div>
           <div className="row" style={{ justifyContent: 'flex-end', gap: 24, marginTop: 14, fontSize: 14 }}>
             <span>
-              <span className="label-up">Orçamentos </span>
+              <span className="label-up">Clientes </span>
               <b>{lista.length}</b>
             </span>
             <span>

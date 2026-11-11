@@ -304,7 +304,7 @@ export function OrcamentoDetalhe() {
     <div className="page">
       <Link to="/orcamentos" className="btn-link">
         <ArrowLeft size={15} strokeWidth={1.5} />
-        Orçamentos
+        Clientes
       </Link>
       <Cabecalho kicker={o.codigo} titulo={o.cliente}>
         {gestor && (

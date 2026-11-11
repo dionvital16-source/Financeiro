@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { CreditCard, FileText, LayoutDashboard, LogOut, User, Users } from 'lucide-react'
+import { CreditCard, LayoutDashboard, Users2, LogOut, User, Users } from 'lucide-react'
 import { pode } from '../lib/regras'
 import { PAPEIS } from '../lib/types'
 import { useAuth } from '../state/AuthContext'
@@ -12,7 +12,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   const itens = [
     { para: '/', rotulo: 'Painel', Icone: LayoutDashboard, ver: true },
-    { para: '/orcamentos', rotulo: 'Orçamentos', Icone: FileText, ver: true },
+    { para: '/orcamentos', rotulo: 'Clientes', Icone: Users2, ver: true },
     { para: '/formas', rotulo: 'Formas de pagamento', Icone: CreditCard, ver: pode.administrar(papel) },
     { para: '/usuarios', rotulo: 'Usuários', Icone: Users, ver: pode.administrar(papel) },
     { para: '/perfil', rotulo: 'Meu perfil', Icone: User, ver: true },

@@ -115,7 +115,7 @@ export function Painel() {
 
       <Blueprint className="card">
         <div className="card-head">
-          <h3>Orçamentos sem nota fiscal no período</h3>
+          <h3>Clientes sem nota fiscal no período</h3>
         </div>
         {semNota.length ? (
           semNota.map((o) => (
