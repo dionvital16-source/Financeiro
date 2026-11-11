@@ -23,6 +23,25 @@ interface Auth {
 
 const Ctx = createContext<Auth | null>(null)
 
+/** Sai sozinho depois deste tempo sem mexer no site (computador compartilhado, aba esquecida). */
+const LIMITE_INATIVIDADE_MS = 60 * 60 * 1000
+const CHAVE_ATIVIDADE = 'vf.ultima-atividade'
+
+function lerAtividade(): number {
+  try {
+    return Number(localStorage.getItem(CHAVE_ATIVIDADE)) || 0
+  } catch {
+    return 0
+  }
+}
+function marcarAtividade(): void {
+  try {
+    localStorage.setItem(CHAVE_ATIVIDADE, String(Date.now()))
+  } catch {
+    /* sem armazenamento */
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null)
   const [perfil, setPerfil] = useState<Perfil | null>(DEMO ? PERFIS_DEMO[0] : null)
@@ -64,7 +83,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [userId])
 
+  // Saída automática por inatividade. Vale para todas as abas abertas do site.
+  useEffect(() => {
+    if (!supabase || !userId) return
+    const cliente = supabase
+    const ultima = lerAtividade()
+    if (ultima && Date.now() - ultima > LIMITE_INATIVIDADE_MS) {
+      void cliente.auth.signOut()
+      return
+    }
+    marcarAtividade()
+    let anterior = Date.now()
+    const mexeu = () => {
+      // grava no máximo a cada 30 s, para não pesar
+      if (Date.now() - anterior > 30_000) {
+        anterior = Date.now()
+        marcarAtividade()
+      }
+    }
+    const eventos = ['pointerdown', 'keydown', 'scroll', 'visibilitychange'] as const
+    eventos.forEach((e) => window.addEventListener(e, mexeu, { passive: true }))
+    const relogio = window.setInterval(() => {
+      if (Date.now() - lerAtividade() > LIMITE_INATIVIDADE_MS) void cliente.auth.signOut()
+    }, 60_000)
+    return () => {
+      eventos.forEach((e) => window.removeEventListener(e, mexeu))
+      window.clearInterval(relogio)
+    }
+  }, [userId])
+
   const entrar = useCallback(async (email: string, senha: string) => {
+    marcarAtividade()
     const { error } = await banco().auth.signInWithPassword({ email: email.trim().toLowerCase(), password: senha })
     if (error) throw error
   }, [])
