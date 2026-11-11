@@ -12,10 +12,8 @@ function Moldura({ children }: { children: React.ReactNode }) {
     <div className="auth-wrap">
       <Blueprint className="auth-card">
         <div className="brand" style={{ padding: 0 }}>
-          <b>
-            Vital <span>Financeiro</span>
-          </b>
-          <span className="label-up">Orçamentos fechados, pagamentos e notas</span>
+          <img src="/logo-vital-cor.png" alt="Vital Esquadrias e Vidros" width={220} height={67} />
+          <span className="produto">Financeiro</span>
         </div>
         {children}
       </Blueprint>

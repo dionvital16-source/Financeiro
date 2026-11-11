@@ -22,10 +22,8 @@ export function Shell({ children }: { children: ReactNode }) {
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">
-          <b>
-            Vital <span>Financeiro</span>
-          </b>
-          <span className="label-up">Esquadrias e Vidros</span>
+          <img src="/logo-vital-branco.png" alt="Vital Esquadrias e Vidros" width={172} height={53} />
+          <span className="produto">Financeiro</span>
         </div>
         <nav className="nav">
           {itens

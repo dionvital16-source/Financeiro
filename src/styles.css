@@ -248,3 +248,130 @@ select.input { appearance: auto; }
 
 .btn.ocupado { opacity: 0.45; cursor: not-allowed; }
 label.btn { cursor: pointer; }
+
+/* =====================================================================
+   IDENTIDADE VITAL ESQUADRIAS E VIDROS
+   Verde, branco e angular: verdes da marca, logotipo, títulos em
+   sans geométrica extra-negrito e faixas diagonais (17°). Cantos retos.
+   ===================================================================== */
+:root {
+  --verde-vital: #009635;
+  --verde-medio: #026529;
+  --verde-escuro: #00491e;
+  --verde-claro: #93c763;
+  --cinza-vital: #757575;
+
+  --color-bg: #f4f6f4;
+  --color-surface: #eef1ee;
+  --color-divider: rgba(29, 31, 32, 0.14);
+
+  --color-accent: #009635;
+  --color-accent-100: #e8f5ec;
+  --color-accent-200: #cfe9d7;
+  --color-accent-300: #a5d8b5;
+  --color-accent-400: #5cbd83;
+  --color-accent-500: #009635;
+  --color-accent-600: #027f2e;
+  --color-accent-700: #026529;
+  --color-accent-800: #00491e;
+  --color-accent-900: #00331a;
+
+  --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-heading-weight: 800;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+body { font-size: 14.5px; }
+h1, h2, h3 { text-transform: uppercase; letter-spacing: -0.01em; }
+h1 { font-size: 32px; line-height: 1.05; color: var(--verde-vital); }
+h2 { font-size: 24px; }
+h3 { font-size: 15px; letter-spacing: 0.05em; display: flex; align-items: center; gap: 10px; }
+/* marca de seção: pequeno paralelogramo verde, na inclinação das faixas do "V" */
+h3::before { content: ''; width: 7px; height: 16px; background: var(--verde-vital); transform: skewX(-17deg); flex: none; }
+.modal h3::before { display: none; }
+
+.kicker { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; color: var(--cinza-vital); margin-bottom: 4px; }
+.label-up { font-weight: 600; font-size: 10.5px; letter-spacing: 0.09em; color: var(--cinza-vital); }
+
+/* cartões: brancos, borda fina, sem marcas nos cantos */
+.blueprint { background: #fff; }
+.blueprint > .corner { display: none; }
+.modal, .auth-card { background: #fff; }
+
+.btn { font-weight: 700; font-size: 13px; letter-spacing: 0.01em; }
+.btn-sm { font-size: 11px; letter-spacing: 0.06em; }
+.btn-link { font-weight: 700; font-size: 11.5px; letter-spacing: 0.08em; }
+.chip { font-weight: 700; font-size: 11.5px; letter-spacing: 0.04em; background: #fff; }
+.chip.on { background: var(--verde-vital); border-color: var(--verde-vital); color: #fff; }
+.badge { font-weight: 700; font-size: 9.5px; letter-spacing: 0.08em; }
+.table th { font-weight: 700; font-size: 10.5px; letter-spacing: 0.08em; color: var(--cinza-vital); }
+.stat .v { font-weight: 800; font-size: 24px; letter-spacing: -0.02em; }
+.input { background: #fff; }
+.input:disabled { background: var(--color-surface); color: var(--cinza-vital); }
+.dashed { background: rgba(255, 255, 255, 0.6); }
+
+/* menu lateral: degradê verde-medio -> verde-escuro, logo branco e faixas translúcidas */
+.sidebar {
+  background: linear-gradient(165deg, var(--verde-medio) 0%, var(--verde-escuro) 100%);
+  border-right: 0; color: #fff; overflow: hidden; isolation: isolate;
+}
+.sidebar::after {
+  content: ''; position: absolute; z-index: -1; pointer-events: none;
+  top: -15%; height: 130%; right: -150px; width: 230px; transform: skewX(-17deg);
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.06) 0 46px, transparent 46px 78px,
+    rgba(255, 255, 255, 0.06) 78px 124px, transparent 124px 156px,
+    rgba(255, 255, 255, 0.06) 156px 202px, transparent 202px);
+}
+.brand { gap: 8px; }
+.brand img { width: 172px; height: auto; }
+.brand .produto {
+  font-weight: 800; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--verde-claro);
+}
+.nav-btn { font-weight: 700; font-size: 12px; letter-spacing: 0.03em; white-space: nowrap; color: rgba(255, 255, 255, 0.8); }
+.nav-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.nav-btn.on { background: rgba(255, 255, 255, 0.14); color: #fff; border-left-color: var(--verde-claro); }
+.sidebar .label-up { color: rgba(255, 255, 255, 0.6); }
+.sidebar .btn-link { color: var(--verde-claro); }
+.sidebar .btn-link:hover { color: #fff; }
+.sidebar :focus-visible { outline-color: #fff; }
+.demo-bar { background: rgba(0, 0, 0, 0.28); }
+.demo-bar .chip { background: transparent; }
+
+/* login: fundo verde com as faixas da marca, cartão branco com o logo */
+.auth-wrap {
+  position: relative; overflow: hidden; isolation: isolate;
+  background: linear-gradient(150deg, var(--verde-medio) 0%, var(--verde-escuro) 100%);
+}
+.auth-wrap::before, .auth-wrap::after {
+  content: ''; position: absolute; z-index: -1; pointer-events: none; top: -20%; height: 140%; transform: skewX(-17deg);
+}
+.auth-wrap::before {
+  left: 6%; width: 300px;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.07) 0 64px, transparent 64px 112px,
+    rgba(255, 255, 255, 0.07) 112px 176px, transparent 176px 224px,
+    rgba(255, 255, 255, 0.07) 224px 288px, transparent 288px);
+}
+.auth-wrap::after {
+  right: 4%; width: 200px;
+  background: linear-gradient(90deg,
+    rgba(147, 199, 99, 0.16) 0 44px, transparent 44px 78px,
+    rgba(147, 199, 99, 0.16) 78px 122px, transparent 122px);
+}
+.auth-card { border: 0; padding: 34px 32px 30px; }
+.auth-card .brand img { width: 220px; }
+.auth-card .brand .produto { color: var(--verde-vital); }
+.auth-card h2 { color: var(--verde-vital); }
+
+/* área principal: fio verde no alto, como a faixa do papel timbrado */
+.main { border-top: 4px solid var(--verde-vital); }
+
+@media (max-width: 900px) {
+  .sidebar { position: relative; }
+  h1 { font-size: 26px; }
+  .brand img { width: 150px; }
+  .nav-btn { font-size: 11.5px; }
+  .nav-btn.on { border-bottom-color: var(--verde-claro); }
+  .sidebar-foot { padding-top: 4px; }
+}
