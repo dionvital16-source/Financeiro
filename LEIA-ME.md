@@ -45,6 +45,13 @@ Mudança no banco sempre vai antes do site.
 - Saída automática depois de 60 minutos sem uso.
 - Sem backup automático no plano gratuito do Supabase: exportar os dados de tempos em tempos.
 
+## Assinatura eletrônica do pedido
+
+- O vendedor anexa o PDF em "Enviar para assinatura": a Vital assina na hora e o sistema gera um link que vale 7 dias.
+- O cliente abre o link (`/assinar/<código>`), sem login, confere o pedido, informa nome e CPF/CNPJ e desenha a assinatura.
+- A função de servidor `supabase/functions/assinatura` gera o PDF final com o "Termo de assinatura" e arquiva em "Pedido assinado".
+- O banco guarda só o hash do código do link. A função confere o código, o prazo, o CPF/CNPJ do cadastro e limita tentativas por aparelho.
+
 ## Segredos
 
 O site usa somente a chave pública do Supabase (variáveis `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`, configuradas no Netlify).

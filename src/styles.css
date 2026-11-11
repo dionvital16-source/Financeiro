@@ -375,3 +375,20 @@ h3::before { content: ''; width: 7px; height: 16px; background: var(--verde-vita
   .nav-btn.on { border-bottom-color: var(--verde-claro); }
   .sidebar-foot { padding-top: 4px; }
 }
+
+/* ---------- assinatura do pedido ---------- */
+.assinar-card { width: min(560px, 100%); }
+.passo { display: flex; gap: 14px; align-items: flex-start; padding: 14px 0; border-top: 1px solid var(--hair-soft); }
+.passo-n {
+  flex: none; width: 28px; height: 28px; display: grid; place-items: center; background: var(--verde-vital); color: #fff;
+  font-weight: 800; font-size: 13px; transform: skewX(-17deg);
+}
+.quadro-assinatura {
+  display: block; width: 100%; aspect-ratio: 3 / 1; background: #fff; border: 1px dashed rgba(29, 31, 32, 0.4);
+  touch-action: none; cursor: crosshair;
+  background-image: linear-gradient(rgba(29, 31, 32, 0.25), rgba(29, 31, 32, 0.25)); background-size: 86% 1px; background-position: 50% 78%; background-repeat: no-repeat;
+}
+.codigo-verificacao { background: var(--color-accent-100); padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; }
+.codigo-verificacao b { font-size: 22px; font-weight: 800; color: var(--verde-escuro); letter-spacing: 0.04em; }
+.envio-assinatura { border: 1px solid var(--color-divider); border-left: 4px solid var(--verde-vital); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; background: var(--color-bg); }
+a.btn { cursor: pointer; }

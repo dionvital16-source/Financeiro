@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Shell } from './components/Shell'
 import { Carregando, Vazio } from './components/ui'
 import { CONFIGURADO, DEMO, mensagemErro } from './lib/supabase'
@@ -7,6 +7,7 @@ import { pode } from './lib/regras'
 import type { Papel } from './lib/types'
 import { FormasPagamento } from './screens/FormasPagamento'
 import { Importar } from './screens/Importar'
+import { Assinar } from './screens/Assinar'
 import { Aviso, Login, NovaSenha } from './screens/Login'
 import { OrcamentoDetalhe } from './screens/OrcamentoDetalhe'
 import { Orcamentos } from './screens/Orcamentos'
@@ -51,6 +52,10 @@ function Telas() {
 
 export function App() {
   const { carregando, logado, perfil, recuperando } = useAuth()
+  const { pathname } = useLocation()
+
+  // Página pública do cliente: abre pelo link de assinatura, sem login e sem nada do sistema por trás.
+  if (pathname.startsWith('/assinar/')) return <Assinar token={pathname.slice('/assinar/'.length).replace(/\/+$/, '')} />
 
   if (!DEMO && !CONFIGURADO)
     return <Aviso titulo="Site ainda não configurado">Falta informar o endereço e a chave pública do Supabase. Para ver as telas com dados de exemplo, abra o site com ?demo no final do endereço.</Aviso>

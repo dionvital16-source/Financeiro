@@ -84,6 +84,26 @@ export interface Pedido {
   criado_em: string
 }
 
+export interface Assinatura {
+  id: string
+  orcamento_id: string
+  original_path: string
+  arquivo_nome: string
+  original_sha256: string
+  token_hash: string
+  status: 'aguardando' | 'assinado' | 'cancelado'
+  expira_em: string
+  tentativas: number
+  enviado_por: string | null
+  enviado_por_nome: string | null
+  criado_em: string
+  assinante_nome: string | null
+  assinante_doc: string | null
+  assinado_em: string | null
+  codigo_verificacao: string | null
+  pedido_id: string | null
+}
+
 export interface Tabelas {
   perfis: Perfil
   formas: Forma
@@ -91,6 +111,7 @@ export interface Tabelas {
   parcelas: Parcela
   notas: Nota
   pedidos: Pedido
+  assinaturas: Assinatura
 }
 export type Chave = keyof Tabelas
 export type Dados = { [K in Chave]: Tabelas[K][] }
@@ -102,4 +123,5 @@ export const NOME_TABELA: Record<Chave, string> = {
   parcelas: 'parcelas',
   notas: 'notas_fiscais',
   pedidos: 'pedidos_assinados',
+  assinaturas: 'assinaturas',
 }

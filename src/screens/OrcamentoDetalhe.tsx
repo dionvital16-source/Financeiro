@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, Download, FileText, Paperclip, Pencil, Plus, Trash2 } from 'lucide-react'
+import { AssinaturaPedido } from '../components/AssinaturaPedido'
 import { OrcamentoForm } from '../components/OrcamentoForm'
 import { SeloNota, SeloOrcamento, SeloParcela, useResumos } from '../components/Selos'
 import { Blueprint, Cabecalho, Campo, Confirmar, Modal, Stat, Vazio } from '../components/ui'
@@ -543,8 +544,9 @@ export function OrcamentoDetalhe() {
             />
           </label>
         </div>
+        <AssinaturaPedido orcamento={o} />
         {meusPedidos.length === 0 ? (
-          <Vazio>Nenhum pedido arquivado. Clique em "Anexar PDF" para guardar o pedido assinado pelo cliente (até 25 MB).</Vazio>
+          <Vazio>Nenhum pedido assinado arquivado. Se o cliente já assinou no papel, clique em "Anexar PDF" para guardar a cópia (até 25 MB).</Vazio>
         ) : (
           meusPedidos.map((d) => (
             <div key={d.id} className="lista-row">

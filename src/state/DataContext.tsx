@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { novoToken, sha256Hex } from '../lib/assinatura'
 import { normalizar } from '../lib/format'
 import { BUCKET_NOTAS, BUCKET_PEDIDOS, DEMO, TAMANHO_MAX_ARQUIVO, banco } from '../lib/supabase'
-import { NOME_TABELA, type Chave, type Dados, type Nota, type Pedido, type Tabelas } from '../lib/types'
+import { NOME_TABELA, type Assinatura, type Chave, type Dados, type Nota, type Pedido, type Tabelas } from '../lib/types'
 import { useAuth } from './AuthContext'
 import { dadosDemo } from './demo'
 
@@ -21,9 +22,13 @@ interface DataCtx extends Dados {
   /** Arquiva o pedido assinado pelo cliente (PDF) no orçamento. */
   anexarPedido: (orcamentoId: string, arquivo: File) => Promise<void>
   linkPedido: (pedido: Pedido) => Promise<string | null>
+  /** Guarda o PDF e cria o envio para o cliente assinar. Devolve o código secreto do link (só existe aqui, uma vez). */
+  enviarParaAssinatura: (orcamentoId: string, arquivo: File) => Promise<{ assinatura: Assinatura; token: string }>
+  /** Troca o código do link (o antigo para de valer) e renova os 7 dias. */
+  novoLinkAssinatura: (a: Assinatura) => Promise<string>
 }
 
-const VAZIO: Dados = { perfis: [], formas: [], orcamentos: [], parcelas: [], notas: [], pedidos: [] }
+const VAZIO: Dados = { perfis: [], formas: [], orcamentos: [], parcelas: [], notas: [], pedidos: [], assinaturas: [] }
 const Ctx = createContext<DataCtx | null>(null)
 
 const PADRAO: { [K in Chave]: Novo<K> } = {
@@ -33,6 +38,7 @@ const PADRAO: { [K in Chave]: Novo<K> } = {
   parcelas: { pago_em: null, descricao: null, observacao: null },
   notas: { arquivo_path: null, arquivo_nome: null },
   pedidos: {},
+  assinaturas: { status: 'aguardando', tentativas: 0, assinante_nome: null, assinante_doc: null, assinado_em: null, codigo_verificacao: null, pedido_id: null },
 }
 
 function ordenar(d: Dados): Dados {
@@ -45,6 +51,7 @@ function ordenar(d: Dados): Dados {
     parcelas: [...d.parcelas].sort((a, b) => a.vencimento.localeCompare(b.vencimento)),
     notas: [...d.notas].sort((a, b) => a.data_emissao.localeCompare(b.data_emissao)),
     pedidos: [...d.pedidos].sort((a, b) => a.criado_em.localeCompare(b.criado_em)),
+    assinaturas: [...d.assinaturas].sort((a, b) => b.criado_em.localeCompare(a.criado_em)),
   }
 }
 
@@ -134,6 +141,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         novo.parcelas = novo.parcelas.filter((p) => p.orcamento_id !== id)
         novo.notas = novo.notas.filter((n) => n.orcamento_id !== id)
         novo.pedidos = novo.pedidos.filter((n) => n.orcamento_id !== id)
+        novo.assinaturas = novo.assinaturas.filter((n) => n.orcamento_id !== id)
       }
       return novo
     })
@@ -184,6 +192,44 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return data.signedUrl
   }, [])
 
+  const enviarParaAssinatura = useCallback(
+    async (orcamentoId: string, arquivo: File) => {
+      if (arquivo.type !== 'application/pdf') throw new Error('Só é aceito arquivo PDF.')
+      if (arquivo.size > TAMANHO_MAX_ARQUIVO) throw new Error('Arquivo grande demais (máximo 25 MB).')
+      const hash = await sha256Hex(await arquivo.arrayBuffer())
+      const caminho = `${orcamentoId}/${crypto.randomUUID()}.pdf`
+      if (!DEMO) {
+        const { error } = await banco().storage.from(BUCKET_PEDIDOS).upload(caminho, arquivo, { contentType: 'application/pdf' })
+        if (error) throw error
+      }
+      const token = novoToken()
+      const assinatura = await gravar('assinaturas', {
+        orcamento_id: orcamentoId,
+        original_path: caminho,
+        arquivo_nome: arquivo.name.slice(0, 120),
+        original_sha256: hash,
+        token_hash: await sha256Hex(token),
+        // no banco real estes dois são definidos pelo próprio banco; aqui valem para o modo demonstração
+        ...(DEMO ? { expira_em: new Date(Date.now() + 7 * 86_400_000).toISOString(), enviado_por_nome: perfil?.nome ?? null, enviado_por: perfil?.id ?? null } : {}),
+      })
+      return { assinatura, token }
+    },
+    [gravar, perfil],
+  )
+
+  const novoLinkAssinatura = useCallback(
+    async (a: Assinatura) => {
+      const token = novoToken()
+      await gravar('assinaturas', {
+        id: a.id,
+        token_hash: await sha256Hex(token),
+        ...(DEMO ? { expira_em: new Date(Date.now() + 7 * 86_400_000).toISOString() } : {}),
+      })
+      return token
+    },
+    [gravar],
+  )
+
   // No modo demonstração não há banco para filtrar: imitamos aqui a regra do vendedor (só vê os dele).
   const visiveis = useMemo<Dados>(() => {
     if (!DEMO || !perfil || perfil.papel !== 'Vendedor') return dados
@@ -195,11 +241,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       parcelas: dados.parcelas.filter((p) => meus.has(p.orcamento_id)),
       notas: dados.notas.filter((n) => meus.has(n.orcamento_id)),
       pedidos: dados.pedidos.filter((n) => meus.has(n.orcamento_id)),
+      assinaturas: dados.assinaturas.filter((n) => meus.has(n.orcamento_id)),
     }
   }, [dados, perfil])
 
   return (
-    <Ctx.Provider value={{ ...visiveis, carregando, erro, recarregar, gravar, apagar, anexarPdf, linkPdf, anexarPedido, linkPedido }}>
+    <Ctx.Provider value={{ ...visiveis, carregando, erro, recarregar, gravar, apagar, anexarPdf, linkPdf, anexarPedido, linkPedido, enviarParaAssinatura, novoLinkAssinatura }}>
       {children}
     </Ctx.Provider>
   )
