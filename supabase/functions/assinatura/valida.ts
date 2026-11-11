@@ -4,8 +4,10 @@ export function soDoc(s: string): string {
   return (s ?? '').toUpperCase().replace(/[^0-9A-Z]/g, '')
 }
 
+const todosIguais = (c: string) => c.split('').every((x) => x === c[0])
+
 export function cpfValido(c: string): boolean {
-  if (!/^\d{11}$/.test(c) || /^(\d)\1{10}$/.test(c)) return false
+  if (!/^[0-9]{11}$/.test(c) || todosIguais(c)) return false
   const dv = (n: number) => {
     let soma = 0
     for (let i = 0; i < n; i++) soma += Number(c[i]) * (n + 1 - i)
@@ -16,7 +18,7 @@ export function cpfValido(c: string): boolean {
 }
 
 export function cnpjValido(c: string): boolean {
-  if (!/^[0-9A-Z]{12}\d{2}$/.test(c) || /^(.)\1{13}$/.test(c)) return false
+  if (!/^[0-9A-Z]{12}[0-9]{2}$/.test(c) || todosIguais(c)) return false
   const dv = (n: number) => {
     let soma = 0
     let peso = n - 7

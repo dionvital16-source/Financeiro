@@ -638,6 +638,8 @@ create index if not exists assinatura_tentativas_idx on public.assinatura_tentat
 alter table public.assinatura_tentativas enable row level security;
 revoke all on public.assinatura_tentativas from anon, authenticated;
 
+grant all on public.assinaturas, public.assinatura_tentativas to service_role;
+
 -- ---------- primeiro administrador ----------
 -- Rodar UMA vez, à mão, no painel do Supabase (SQL Editor), trocando o e-mail e o nome:
 --   insert into public.profiles (email, nome, papel) values ('seu@email.com', 'Seu Nome', 'Admin');

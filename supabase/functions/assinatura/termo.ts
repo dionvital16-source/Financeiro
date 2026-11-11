@@ -1,4 +1,4 @@
-// Monta o PDF final: o pedido original + a página "Termo de assinatura eletrônica".
+// Monta o PDF final: o pedido original + a página do Termo de assinatura eletrônica.
 // Não depende de nada do servidor: recebe a biblioteca pdf-lib por parâmetro,
 // para poder ser testado fora do Supabase.
 
@@ -14,7 +14,8 @@ export interface DadosTermo {
   assinanteDoc: string
   assinadoEm: string
   ip: string
-  logoPng: Uint8Array
+  /** sem o logo (se o site estiver fora do ar na hora), o termo sai com o nome da empresa em texto */
+  logoPng: Uint8Array | null
   assinaturaPng: Uint8Array
 }
 
@@ -24,13 +25,14 @@ const TINTA = [29 / 255, 31 / 255, 32 / 255]
 const CINZA = [117 / 255, 117 / 255, 117 / 255]
 const LINHA = [0.82, 0.84, 0.82]
 
-/** As fontes padrão do PDF só conhecem letras latinas: troca o que não couber. */
+/** As fontes padrão do PDF só conhecem letras latinas: tira o que não couber. */
 export function limpo(s: string, max = 200): string {
-  return (s ?? '')
-    .replace(/[‘’]/g, "'")
-    .replace(/[“”]/g, '"')
-    .replace(/[–—]/g, '-')
-    .replace(/[^\x20-\x7E -ÿ]/g, '')
+  return Array.from(s ?? '')
+    .filter((ch) => {
+      const c = ch.charCodeAt(0)
+      return ch.length === 1 && ((c >= 32 && c <= 126) || (c >= 160 && c <= 255))
+    })
+    .join('')
     .trim()
     .slice(0, max)
 }
@@ -55,7 +57,7 @@ export async function montarPdf(lib: any, original: Uint8Array | null, d: DadosT
 
   const normal = await doc.embedFont(StandardFonts.Helvetica)
   const negrito = await doc.embedFont(StandardFonts.HelveticaBold)
-  const logo = await doc.embedPng(d.logoPng)
+  const logo = d.logoPng ? await doc.embedPng(d.logoPng) : null
   const rubrica = await doc.embedPng(d.assinaturaPng)
 
   // rodapé discreto em cada página do pedido, ligando-a ao termo
@@ -80,8 +82,9 @@ export async function montarPdf(lib: any, original: Uint8Array | null, d: DadosT
   // faixa verde do topo e logo
   pg.drawRectangle({ x: 0, y: H - 9, width: W, height: 9, color: cor(VERDE) })
   const lw = 150
-  const lh = (logo.height / logo.width) * lw
-  pg.drawImage(logo, { x: M, y: H - 34 - lh, width: lw, height: lh })
+  const lh = logo ? (logo.height / logo.width) * lw : 46
+  if (logo) pg.drawImage(logo, { x: M, y: H - 34 - lh, width: lw, height: lh })
+  else txt('VITAL ESQUADRIAS E VIDROS', M, H - 62, { size: 15, bold: true, cor: VERDE })
   txt('FINANCEIRO', M, H - 46 - lh, { size: 7.5, bold: true, cor: VERDE })
 
   let y = H - 122
@@ -121,8 +124,9 @@ export async function montarPdf(lib: any, original: Uint8Array | null, d: DadosT
   y -= 36
   let top = quadro('CONTRATADA', y, 104)
   const vw = 168
-  const vh = (logo.height / logo.width) * vw
-  pg.drawImage(logo, { x: M + 22, y: top - 18 - vh, width: vw, height: vh })
+  const vh = logo ? (logo.height / logo.width) * vw : 51
+  if (logo) pg.drawImage(logo, { x: M + 22, y: top - 18 - vh, width: vw, height: vh })
+  else txt('VITAL', M + 22, top - 56, { size: 30, bold: true, cor: VERDE })
   pg.drawLine({ start: { x: M + 22, y: top - 26 - vh }, end: { x: M + 22 + vw + 20, y: top - 26 - vh }, thickness: 0.7, color: cor(TINTA) })
   txt('Vital Esquadrias e Vidros', M + 22, top - 39 - vh, { size: 10.5, bold: true })
   const cx = M + 250

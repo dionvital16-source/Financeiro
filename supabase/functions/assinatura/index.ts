@@ -1,13 +1,12 @@
 // Função de servidor: assinatura eletrônica do pedido pelo cliente (página pública, sem login).
 //
 // Quem chama não tem login. A autorização é o código secreto do link:
-//  - o banco guarda só o "hash" (SHA-256) do código; o código em si nunca fica gravado;
+//  - o banco guarda só o hash (SHA-256) do código; o código em si nunca fica gravado;
 //  - o link vale 7 dias e serve para uma única assinatura;
 //  - há limite de tentativas por aparelho.
 // A chave de serviço usada aqui vem do ambiente da função e nunca vai para o site.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import * as pdfLib from 'npm:pdf-lib@1.17.1'
-import { LOGO_B64 } from './logo.ts'
 import { limpo, montarPdf } from './termo.ts'
 import { docValido, formatarDoc, soDoc } from './valida.ts'
 
@@ -41,6 +40,20 @@ function cabecalhos(req: Request): Record<string, string> {
 }
 
 const b64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0))
+
+// O logotipo vem do próprio site (arquivo público) e fica guardado na memória da função.
+let logoGuardado: Uint8Array | null = null
+async function logo(): Promise<Uint8Array | null> {
+  if (logoGuardado) return logoGuardado
+  try {
+    const r = await fetch(`${SITE}/logo-vital-cor.png`, { signal: AbortSignal.timeout(6000) })
+    const bytes = new Uint8Array(await r.arrayBuffer())
+    if (r.ok && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes.length < 200_000) logoGuardado = bytes
+  } catch {
+    // sem logo o termo sai com o nome da empresa em texto
+  }
+  return logoGuardado
+}
 
 async function sha256(dados: Uint8Array | string): Promise<string> {
   const bytes = typeof dados === 'string' ? new TextEncoder().encode(dados) : dados
@@ -152,7 +165,7 @@ async function assinar(a: any, corpo: any, ip: string, agente: string) {
     throw new Erro(bloquear ? 404 : 400, bloquear ? 'Link bloqueado por excesso de tentativas. Peça um novo link ao seu vendedor.' : 'O CPF/CNPJ não confere com o cadastro do pedido.')
   }
 
-  // ---- reserva: só uma chamada consegue passar de "aguardando" para "assinado"
+  // ---- reserva: só uma chamada consegue passar de aguardando para assinado
   const agora = new Date()
   const verificacao = codigoVerificacao()
   const { data: reservado } = await banco
@@ -184,7 +197,7 @@ async function assinar(a: any, corpo: any, ip: string, agente: string) {
       hashOriginal: hash, verificacao,
       vitalPor: a.enviado_por_nome ?? 'Vital Esquadrias e Vidros', vitalEm: dataHora(new Date(a.criado_em)),
       assinanteNome: nome, assinanteDoc: formatarDoc(doc), assinadoEm: dataHora(agora), ip,
-      logoPng: b64(LOGO_B64), assinaturaPng: rubrica,
+      logoPng: await logo(), assinaturaPng: rubrica,
     })
 
     const caminho = `${a.orcamento_id}/${crypto.randomUUID()}.pdf`

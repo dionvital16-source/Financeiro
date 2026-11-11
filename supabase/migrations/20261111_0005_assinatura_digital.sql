@@ -108,3 +108,6 @@ create table if not exists public.assinatura_tentativas (
 create index if not exists assinatura_tentativas_idx on public.assinatura_tentativas (ip, quando);
 alter table public.assinatura_tentativas enable row level security;
 revoke all on public.assinatura_tentativas from anon, authenticated;
+
+-- a função de servidor trabalha com o papel de serviço
+grant all on public.assinaturas, public.assinatura_tentativas to service_role;
